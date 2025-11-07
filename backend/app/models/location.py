@@ -1,7 +1,5 @@
-from sqlalchemy import Column, Integer, String, DateTime, Boolean
+from sqlalchemy import Column, Integer, String
 from app.database.session import Base
-from datetime import datetime
-
 
 class Location(Base):
     __tablename__ = "locations"
