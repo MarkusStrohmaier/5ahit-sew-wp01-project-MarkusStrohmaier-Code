@@ -1,39 +1,45 @@
-import logging
-
 from sqlalchemy.orm import Session
+from app.models.user import User
+from app.models.location import Location
+from app.models.event import Event
+from datetime import datetime
 
-from app.core.db import init_db
-from app.database.session import engine
+def init_db(db: Session) -> None:
+    """Called by initial_data.py to create seed records."""
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+    # verhindert, dass Seeds mehrfach ausgeführt werden
+    if db.query(User).first():
+        print("Seed-Daten bereits vorhanden.")
+        return
 
+    # USER
+    admin = User(
+        username="admin",
+        email="admin@example.com",
+        hashed_password="hashed_pw_123",
+        is_superuser=True
+    )
 
-def init() -> None:
-    """
-    Initializes the database session and calls the init_db function to set up the database.
+    # LOCATION
+    loc = Location(
+        name="Haupt Halle",
+        address="Musterstraße 1",
+        capacity=1500
+    )
 
-    This function creates a new session using the provided engine and passes it to the init_db function
-    to initialize the database with the necessary data.
+    # EVENT
+    event = Event(
+        title="Opening Night",
+        date=datetime(2025, 5, 20),
+        time="20:00",
+        description="Eröffnungsfeier",
+        location=loc,
+        ticket_capacity=1500
+    )
 
-    Returns:
-        None
-    """
-    with Session(engine) as session:
-        init_db(session)
+    db.add(admin)
+    db.add(loc)
+    db.add(event)
+    db.commit()
 
-
-def main() -> None:
-    """
-    Main function to create initial data for the application.
-
-    This function logs the start of the data creation process, calls the init function to
-    initialize the data, and then logs the completion of the data creation process.
-    """
-    logger.info("Creating initial data")
-    init()
-    logger.info("Initial data created")
-
-
-if __name__ == "__main__":
-    main()
+    print("Seed-Daten erfolgreich eingefügt.")
