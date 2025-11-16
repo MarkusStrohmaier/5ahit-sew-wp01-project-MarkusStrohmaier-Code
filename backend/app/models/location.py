@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String
+from sqlalchemy.orm import relationship
 from app.database.session import Base
 
 class Location(Base):
@@ -8,3 +9,5 @@ class Location(Base):
     name = Column(String(30), index=True, nullable=False)
     address = Column(String(30), index=True, nullable=False)
     capacity = Column(Integer, index=True, nullable=True)
+
+    events = relationship("Event", back_populates="location", cascade="all, delete-orphan")
