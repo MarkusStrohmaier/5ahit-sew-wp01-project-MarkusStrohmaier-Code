@@ -1,5 +1,5 @@
-from app.database.session import Base
+from enum import Enum
 
-class TicketStatus(Base):
+class TicketStatus(Enum):
     SOLD = "SOLD"
     CANCELLED = "CANCELLED"
