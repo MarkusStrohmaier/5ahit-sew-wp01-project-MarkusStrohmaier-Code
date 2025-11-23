@@ -1,0 +1,74 @@
+from sqlalchemy.orm import Session
+from fastapi import HTTPException, status
+
+from app.models.ticket import Ticket
+from app.models.event import Event
+from app.models.booking import Booking
+from app.schemas.ticket import TicketCreate, TicketUpdate
+
+
+def create_ticket(db: Session, ticket: TicketCreate):
+    event = db.query(Event).filter(Event.id == ticket.event_id).first()
+    if not event:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Event not found")
+
+    if ticket.booking_id:
+        booking = db.query(Booking).filter(Booking.id == ticket.booking_id).first()
+        if not booking:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Booking not found")
+
+    db_ticket = Ticket(
+        seat_num=ticket.seat_num,
+        price=ticket.price,
+        status=ticket.status,
+        event_id=ticket.event_id,
+        booking_id=ticket.booking_id
+    )
+    db.add(db_ticket)
+    db.commit()
+    db.refresh(db_ticket)
+    return db_ticket
+
+
+def get_ticket(db: Session, ticket_id: int):
+    ticket = db.query(Ticket).filter(Ticket.id == ticket_id).first()
+    if not ticket:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ticket not found")
+    return ticket
+
+
+def get_tickets(db: Session):
+    return db.query(Ticket).all()
+
+
+def update_ticket(db: Session, ticket_id: int, ticket: TicketUpdate):
+    db_ticket = db.query(Ticket).filter(Ticket.id == ticket_id).first()
+    if not db_ticket:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ticket not found")
+
+    if ticket.event_id:
+        event = db.query(Event).filter(Event.id == ticket.event_id).first()
+        if not event:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Event not found")
+
+    if ticket.booking_id:
+        booking = db.query(Booking).filter(Booking.id == ticket.booking_id).first()
+        if not booking:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Booking not found")
+
+    for key, value in ticket.dict(exclude_unset=True).items():
+        setattr(db_ticket, key, value)
+
+    db.commit()
+    db.refresh(db_ticket)
+    return db_ticket
+
+
+def delete_ticket(db: Session, ticket_id: int):
+    db_ticket = db.query(Ticket).filter(Ticket.id == ticket_id).first()
+    if not db_ticket:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ticket not found")
+
+    db.delete(db_ticket)
+    db.commit()
+    return db_ticket
