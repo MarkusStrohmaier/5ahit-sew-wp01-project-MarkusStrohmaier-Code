@@ -1,0 +1,27 @@
+from typing import List
+from fastapi import APIRouter
+from app.crud import event as crud
+from app.schemas import event as schemas
+from app.api.deps import SessionDep
+
+router = APIRouter(tags=["Event"])
+
+@router.post("/", response_model=schemas.Event)
+def create_event(db: SessionDep, event: schemas.EventCreate):
+    return crud.create_event(db=db, event=event)
+
+@router.get("/{event_id}", response_model=schemas.Event)
+def get_event(db: SessionDep, event_id: int):
+    return crud.get_event(db=db, event_id=event_id)
+
+@router.get("/", response_model=List[schemas.Event])
+def get_events(db: SessionDep):
+    return crud.get_events(db=db)
+
+@router.put("/{event_id}", response_model=schemas.Event)
+def update_event(db: SessionDep, event_id: int, event: schemas.EventUpdate):
+    return crud.update_event(db=db, event_id=event_id, event=event)
+
+@router.delete("/{event_id}", response_model=schemas.Event)
+def delete_event(db: SessionDep, event_id: int):
+    return crud.delete_event(db=db, event_id=event_id)
