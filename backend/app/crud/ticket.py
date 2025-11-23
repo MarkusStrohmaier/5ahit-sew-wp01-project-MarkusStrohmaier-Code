@@ -12,8 +12,9 @@ def create_ticket(db: Session, ticket: TicketCreate):
     if not event:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Event not found")
 
-    if ticket.booking_id:
-        booking = db.query(Booking).filter(Booking.id == ticket.booking_id).first()
+    booking_number = getattr(ticket, "booking_id", None)
+    if booking_number is not None:
+        booking = db.query(Booking).filter(Booking.booking_number == booking_number).first()
         if not booking:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Booking not found")
 
@@ -22,7 +23,7 @@ def create_ticket(db: Session, ticket: TicketCreate):
         price=ticket.price,
         status=ticket.status,
         event_id=ticket.event_id,
-        booking_id=ticket.booking_id
+        booking_id=booking_number
     )
     db.add(db_ticket)
     db.commit()
@@ -46,13 +47,14 @@ def update_ticket(db: Session, ticket_id: int, ticket: TicketUpdate):
     if not db_ticket:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ticket not found")
 
-    if ticket.event_id:
+    if ticket.event_id is not None:
         event = db.query(Event).filter(Event.id == ticket.event_id).first()
         if not event:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Event not found")
 
-    if ticket.booking_id:
-        booking = db.query(Booking).filter(Booking.id == ticket.booking_id).first()
+    booking_number = getattr(ticket, "booking_id", None)
+    if booking_number is not None:
+        booking = db.query(Booking).filter(Booking.booking_number == booking_number).first()
         if not booking:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Booking not found")
 
