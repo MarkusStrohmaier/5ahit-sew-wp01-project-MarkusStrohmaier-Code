@@ -1,5 +1,5 @@
 from typing import List
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Query
 from app.crud import location as crud
 from app.schemas import location as schemas
 from app.api.deps import SessionDep, CurrentUser
@@ -18,8 +18,13 @@ def get_location(db: SessionDep, location_id: int):
     return crud.get_location(db=db, location_id=location_id)
 
 @router.get("/", response_model=List[schemas.Location])
-def get_locations(db: SessionDep):
-    return crud.get_locations(db=db)
+def get_locations(
+    db: SessionDep,
+    skip: int = Query(0, ge=0),
+    limit: int = Query(10, le=100),
+    name: str = Query(None)
+):
+    return crud.search_locations(db=db, skip=skip, limit=limit, name=name)
 
 @router.put("/{location_id}", response_model=schemas.Location)
 def update_location(db: SessionDep, location_id: int, location: schemas.LocationUpdate, current_user: CurrentUser):

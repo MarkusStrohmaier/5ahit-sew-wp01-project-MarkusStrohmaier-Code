@@ -49,3 +49,16 @@ def delete_location(db: Session, location_id: int):
     db.delete(db_location)
     db.commit()
     return db_location
+
+def search_locations(
+    db: Session,
+    skip: int = 0,
+    limit: int = 10,
+    name: str = None
+):
+    query = db.query(Location)
+    
+    if name:
+        query = query.filter(Location.name.ilike(f"%{name}%"))
+        
+    return query.offset(skip).limit(limit).all()

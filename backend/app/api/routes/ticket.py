@@ -1,9 +1,10 @@
 from typing import List
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Query
 from app.crud import ticket as crud
 from app.schemas import ticket as schemas
 from app.api.deps import SessionDep, CurrentUser
 from app.models.userRole import UserRole
+from app.models.ticketStatus import TicketStatus
 
 router = APIRouter(tags=["Ticket"])
 
@@ -18,8 +19,14 @@ def get_ticket(db: SessionDep, ticket_id: int):
     return crud.get_ticket(db=db, ticket_id=ticket_id)
 
 @router.get("/", response_model=List[schemas.Ticket])
-def get_tickets(db: SessionDep):
-    return crud.get_tickets(db=db)
+def get_tickets(
+    db: SessionDep,
+    skip: int = Query(0, ge=0),
+    limit: int = Query(10, le=100),
+    event_id: int = Query(None),
+    status: TicketStatus = Query(None)
+):
+    return crud.search_tickets(db=db, skip=skip, limit=limit, event_id=event_id, status=status)
 
 @router.put("/{ticket_id}", response_model=schemas.Ticket)
 def update_ticket(db: SessionDep, ticket_id: int, ticket: schemas.TicketUpdate, current_user: CurrentUser):

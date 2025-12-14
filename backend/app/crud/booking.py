@@ -47,18 +47,48 @@ def get_booking(db: Session, booking_number: int):
     return booking
 
 
-def get_bookings(db: Session):
-    return db.query(Booking).all()
+def search_bookings(
+    db: Session,
+    skip: int = 0, 
+    limit: int = 10, 
+    event_id: int = None
+):
+    query = db.query(Booking)
+    if event_id is not None:
+        query = query.filter(Booking.event_id == event_id)
+    return query.offset(skip).limit(limit).all()
 
-def get_bookings_by_user(db: Session, user_id: int):
-    return db.query(Booking).filter(Booking.user_id == user_id).all()
 
-def get_bookings_by_organizer(db: Session, organizer_id: int):
-    return (
+def search_bookings_by_user(
+    db: Session, 
+    user_id: int, 
+    skip: int = 0, 
+    limit: int = 10, 
+    event_id: int = None
+):
+    query = db.query(Booking).filter(Booking.user_id == user_id)
+    if event_id is not None:
+        query = query.filter(Booking.event_id == event_id)
+    return query.offset(skip).limit(limit).all()
+
+
+def search_bookings_by_organizer(
+    db: Session, 
+    organizer_id: int, 
+    skip: int = 0, 
+    limit: int = 10, 
+    event_id: int = None
+):
+    query = (
         db.query(Booking)
         .join(Event)
-        .all()
+        .filter(Event.organizer_id == organizer_id)
     )
+    
+    if event_id is not None:
+        query = query.filter(Booking.event_id == event_id)
+        
+    return query.offset(skip).limit(limit).all()
 
 
 def update_booking(db: Session, booking_number: int, booking: BookingUpdate):

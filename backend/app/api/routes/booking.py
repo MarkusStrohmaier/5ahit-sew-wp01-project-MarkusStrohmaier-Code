@@ -1,5 +1,5 @@
 from typing import List
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Query
 from app.crud import booking as crud
 from app.schemas import booking as schemas
 from app.api.deps import SessionDep, CurrentUser
@@ -25,14 +25,32 @@ def get_booking(db: SessionDep, booking_number: int, current_user: CurrentUser):
     return booking
 
 @router.get("/", response_model=List[schemas.Booking])
-def get_bookings(db: SessionDep, current_user: CurrentUser):
+def get_bookings(
+    db: SessionDep, 
+    current_user: CurrentUser,
+    skip: int = Query(0, ge=0),
+    limit: int = Query(10, le=100),
+    event_id: int = Query(None),
+):
     if current_user.role == UserRole.ADMIN:
-        return crud.get_bookings(db=db)
+        return crud.search_bookings(db=db, skip=skip, limit=limit, event_id=event_id)
     
     elif current_user.role == UserRole.ORGANIZER:
-        return crud.get_bookings_by_organizer(db=db, organizer_id=current_user.id)
+        return crud.search_bookings_by_organizer(
+            db=db, 
+            organizer_id=current_user.id, 
+            skip=skip, 
+            limit=limit, 
+            event_id=event_id
+        )
         
-    return crud.get_bookings_by_user(db=db, user_id=current_user.id)
+    return crud.search_bookings_by_user(
+        db=db, 
+        user_id=current_user.id, 
+        skip=skip, 
+        limit=limit, 
+        event_id=event_id
+    )
 
 @router.put("/{booking_number}", response_model=schemas.Booking)
 def update_booking(db: SessionDep, booking_number: int, booking: schemas.BookingUpdate, current_user: CurrentUser):

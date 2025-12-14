@@ -5,6 +5,7 @@ from app.models.ticket import Ticket
 from app.models.event import Event
 from app.models.booking import Booking
 from app.schemas.ticket import TicketCreate, TicketUpdate
+from app.models.ticketStatus import TicketStatus
 
 
 def create_ticket(db: Session, ticket: TicketCreate):
@@ -74,3 +75,20 @@ def delete_ticket(db: Session, ticket_id: int):
     db.delete(db_ticket)
     db.commit()
     return db_ticket
+
+def search_tickets(
+    db: Session,
+    skip: int = 0,
+    limit: int = 10,
+    event_id: int = None,
+    status: TicketStatus = None
+):
+    query = db.query(Ticket)
+    
+    if event_id is not None:
+        query = query.filter(Ticket.event_id == event_id)
+        
+    if status is not None:
+        query = query.filter(Ticket.status == status)
+        
+    return query.offset(skip).limit(limit).all()
