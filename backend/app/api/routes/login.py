@@ -20,7 +20,7 @@ def login_access_token(
     session: SessionDep, form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
 ) -> schemas.Token:
     user = crud.authenticate_user(
-        db=session, email=form_data.username, password=form_data.password
+        db=session, username=form_data.username, password=form_data.password
     )
     if not user:
         raise HTTPException(
@@ -34,7 +34,7 @@ def login_access_token(
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     return schemas.Token(
         access_token=security.create_access_token(
-            user.email, expires_delta=access_token_expires
+            user.username, expires_delta=access_token_expires
         ),
         token_type="bearer",
     )

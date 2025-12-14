@@ -6,18 +6,14 @@ from app.models.user import User
 from app.models.event import Event
 from app.schemas.booking import BookingCreate, BookingUpdate
 
-
-def create_booking(db: Session, booking: BookingCreate):
-    user = db.query(User).filter(User.id == booking.user_id).first()
-    if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-
+def create_booking(db: Session, booking: BookingCreate, user_id: int):
+    
     event = db.query(Event).filter(Event.id == booking.event_id).first()
     if not event:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Event not found")
 
     db_booking = Booking(
-        user_id=booking.user_id,
+        user_id=user_id, 
         event_id=booking.event_id,
         booking_date=booking.booking_date
     )

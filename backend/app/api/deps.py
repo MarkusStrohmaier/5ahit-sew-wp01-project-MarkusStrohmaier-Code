@@ -15,7 +15,8 @@ from app.core.config import settings
 
 from app.schemas.token import TokenData
 from app.schemas.user import User
-from app.crud.user import get_user_by_email
+from app.crud.user import get_user_by_username # Geändert von get_user_by_email
+from app.models.userRole import UserRole # Neu für Admin-Check
 
 
 # Database Session
@@ -73,7 +74,8 @@ def get_current_user(session: SessionDep, token: TokenDep) -> User:
             detail="Could not validate credentials",
         )
     assert token_data.username is not None
-    user = get_user_by_email(db=session, email=token_data.username)
+    # KORREKTUR: Suche nach username im Token, daher get_user_by_username
+    user = get_user_by_username(db=session, username=token_data.username) 
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
@@ -88,22 +90,15 @@ def get_current_user(session: SessionDep, token: TokenDep) -> User:
 CurrentUser = Annotated[User, Depends(get_current_user)]
 
 
-def get_current_active_superuser(current_user: CurrentUser) -> User:
+def get_current_active_admin(current_user: CurrentUser) -> User:
     """
-    Verify if the current user is a superuser.
-
-    Args:
-        current_user (CurrentUser): The user object to be checked.
-
-    Returns:
-        User: The current user if they are a superuser.
-
-    Raises:
-        HTTPException: If the current user is not a superuser, an HTTP 403 Forbidden exception is raised.
+    Verify if the current user is an Admin (ersetzt Superuser).
     """
-    if not current_user.is_superuser:
+    if current_user.role != UserRole.ADMIN: # KORREKTUR: Prüft auf die Rolle ADMIN
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="The user doesn't have enough privileges",
         )
     return current_user
+
+get_current_active_superuser = get_current_active_admin
