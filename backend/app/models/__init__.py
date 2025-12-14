@@ -1,4 +1,5 @@
 from .user import User as User
+from .userRole import UserRole as UserRole
 from .booking import Booking as Booking
 from .event import Event as Event
 from .location import Location as Location
