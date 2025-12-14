@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session
 from app.models.user import User
+from app.models.userRole import UserRole
 from app.schemas.user import UserCreate
 from app.core.security import get_password_hash, verify_password
-from datetime import datetime, timezone
 
 
 def create_user(*, db: Session, user: UserCreate):
@@ -10,6 +10,7 @@ def create_user(*, db: Session, user: UserCreate):
         username=user.username,
         email=user.email,
         hashed_password=get_password_hash(user.password),
+        role=user.role,
     )
     db.add(db_user)
     db.commit()
@@ -22,8 +23,7 @@ def create_superuser(*, db: Session, user: UserCreate):
         username=user.username,
         email=user.email,
         hashed_password=get_password_hash(user.password),
-        is_superuser=True,
-        created_at=datetime.now(timezone.utc).isoformat(),
+        role=UserRole.ADMIN,
     )
     db.add(db_user)
     db.commit()
@@ -39,11 +39,11 @@ def get_users(db: Session):
     return db.query(User).all()
 
 
-def authenticate_user(*, db: Session, email: str, password: str):
-    db_user = db.query(User).filter(User.email == email).first()
+def authenticate_user(*, db: Session, username: str, password: str):
+    db_user = db.query(User).filter(User.username == username).first()
     if not db_user:
         return None
-    if not verify_password(password, str(db_user.hashed_password)):
+    if not verify_password(password, db_user.hashed_password):
         return None
     return db_user
 
