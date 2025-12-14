@@ -29,6 +29,9 @@ def get_bookings(db: SessionDep, current_user: CurrentUser):
     if current_user.role == UserRole.ADMIN:
         return crud.get_bookings(db=db)
     
+    elif current_user.role == UserRole.ORGANIZER:
+        return crud.get_bookings_by_organizer(db=db, organizer_id=current_user.id)
+        
     return crud.get_bookings_by_user(db=db, user_id=current_user.id)
 
 @router.put("/{booking_number}", response_model=schemas.Booking)

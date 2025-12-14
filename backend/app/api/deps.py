@@ -15,8 +15,8 @@ from app.core.config import settings
 
 from app.schemas.token import TokenData
 from app.schemas.user import User
-from app.crud.user import get_user_by_username # Geändert von get_user_by_email
-from app.models.userRole import UserRole # Neu für Admin-Check
+from app.crud.user import get_user_by_username
+from app.models.userRole import UserRole
 
 
 # Database Session
@@ -74,8 +74,7 @@ def get_current_user(session: SessionDep, token: TokenDep) -> User:
             detail="Could not validate credentials",
         )
     assert token_data.username is not None
-    # KORREKTUR: Suche nach username im Token, daher get_user_by_username
-    user = get_user_by_username(db=session, username=token_data.username) 
+    user = get_user_by_username(db=session, username=token_data.username)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
@@ -94,7 +93,7 @@ def get_current_active_admin(current_user: CurrentUser) -> User:
     """
     Verify if the current user is an Admin (ersetzt Superuser).
     """
-    if current_user.role != UserRole.ADMIN: # KORREKTUR: Prüft auf die Rolle ADMIN
+    if current_user.role != UserRole.ADMIN:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="The user doesn't have enough privileges",
