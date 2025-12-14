@@ -62,3 +62,20 @@ def delete_event(db: Session, event_id: int):
     db.delete(db_event)
     db.commit()
     return db_event
+
+def search_events(
+    db: Session, 
+    skip: int = 0, 
+    limit: int = 10, 
+    title: str = None, 
+    location_id: int = None
+):
+    query = db.query(Event)
+    
+    if title:
+        query = query.filter(Event.title.ilike(f"%{title}%")) 
+        
+    if location_id is not None:
+        query = query.filter(Event.location_id == location_id)
+        
+    return query.offset(skip).limit(limit).all()
