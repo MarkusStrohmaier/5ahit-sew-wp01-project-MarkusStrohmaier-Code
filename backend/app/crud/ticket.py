@@ -11,13 +11,32 @@ from app.models.ticketStatus import TicketStatus
 def create_ticket(db: Session, ticket: TicketCreate):
     event = db.query(Event).filter(Event.id == ticket.event_id).first()
     if not event:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Event not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Event not found"
+        )
 
-    booking_number = getattr(ticket, "booking_id", None)
+    if event.ticket_capacity is not None:
+        ticket_count = db.query(Ticket).filter(
+            Ticket.event_id == event.id
+        ).count()
+
+        if ticket_count >= event.ticket_capacity:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Ticket capacity for this event has been reached"
+            )
+
+    booking_number = ticket.booking_id
     if booking_number is not None:
-        booking = db.query(Booking).filter(Booking.booking_number == booking_number).first()
+        booking = db.query(Booking).filter(
+            Booking.booking_number == booking_number
+        ).first()
         if not booking:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Booking not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Booking not found"
+            )
 
     db_ticket = Ticket(
         seat_num=ticket.seat_num,
@@ -26,10 +45,12 @@ def create_ticket(db: Session, ticket: TicketCreate):
         event_id=ticket.event_id,
         booking_id=booking_number
     )
+
     db.add(db_ticket)
     db.commit()
     db.refresh(db_ticket)
     return db_ticket
+
 
 
 def get_ticket(db: Session, ticket_id: int):
