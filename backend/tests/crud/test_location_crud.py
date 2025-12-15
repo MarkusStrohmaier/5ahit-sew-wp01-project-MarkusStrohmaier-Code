@@ -12,7 +12,7 @@ def test_location(db: Session):
         address="123 Test Street",
         capacity=200
     )
-    location = create_location(db, location_in)
+    location = create_location(db, location_in) 
     return location
 
 def test_create_location(db: Session):

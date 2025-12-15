@@ -1,29 +1,38 @@
 import pytest
 from datetime import datetime
 from sqlalchemy.orm import Session
+from fastapi import HTTPException
+import uuid
+
 from app.crud.ticket import create_ticket, get_ticket, get_tickets, update_ticket, delete_ticket
 from app.models.ticket import Ticket
 from app.models.event import Event
 from app.models.booking import Booking
+from app.models.user import User
 from app.schemas.ticket import TicketCreate, TicketUpdate
 from app.models.ticketStatus import TicketStatus
 
 @pytest.fixture
+def test_user(db: Session):
+    unique_username = f"ticketuser_{uuid.uuid4().hex[:8]}"
+    user = User(username=unique_username, email=f"{unique_username}@example.com", hashed_password="hashedpw")
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return user
+
+@pytest.fixture
 def test_event(db: Session):
-    event = Event(
-        title="Test Event",
-        date=datetime.now(),
-        ticket_capacity=100
-    )
+    event = Event(title="Test Ticket Event", date=datetime.now(), ticket_capacity=100)
     db.add(event)
     db.commit()
     db.refresh(event)
     return event
 
 @pytest.fixture
-def test_booking(db: Session, test_event: Event):
+def test_booking(db: Session, test_event: Event, test_user: User):
     booking = Booking(
-        user_id=1,
+        user_id=test_user.id,
         event_id=test_event.id
     )
     db.add(booking)
@@ -80,8 +89,6 @@ def test_delete_ticket(db: Session, test_event: Event, test_booking: Booking):
     ticket = create_ticket(db, TicketCreate(seat_num="E1", price=70, status=TicketStatus.SOLD, event_id=test_event.id, booking_id=test_booking.booking_number))
     deleted = delete_ticket(db, ticket.id)
     assert deleted.id == ticket.id
-    from fastapi import HTTPException
-    import pytest
     with pytest.raises(HTTPException):
         get_ticket(db, ticket.id)
 
@@ -93,8 +100,6 @@ def test_create_ticket_with_invalid_event(db: Session, test_booking: Booking):
         event_id=99999,
         booking_id=test_booking.booking_number
     )
-    import pytest
-    from fastapi import HTTPException
     with pytest.raises(HTTPException):
         create_ticket(db, ticket_in)
 
@@ -106,7 +111,5 @@ def test_create_ticket_with_invalid_booking(db: Session, test_event: Event):
         event_id=test_event.id,
         booking_id=99999
     )
-    import pytest
-    from fastapi import HTTPException
     with pytest.raises(HTTPException):
         create_ticket(db, ticket_in)

@@ -79,7 +79,7 @@ def test_get_events(db: Session, test_event: Event):
     assert test_event.id in ids
 
 
-def test_update_event(db: Session, test_event: Event, test_location: Location):
+def test_update_event(db: Session, test_event: Event):
     update_data = EventUpdate(
         title="Updated Event",
         time="20:00",
