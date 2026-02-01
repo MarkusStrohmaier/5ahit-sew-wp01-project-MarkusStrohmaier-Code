@@ -11,9 +11,7 @@ from app.api.deps import SessionDep, CurrentUser
 from app.core.config import settings
 from app.core import security
 
-
 router = APIRouter(tags=["login"])
-
 
 @router.post("/login", response_model=schemas.Token)
 def login_access_token(
@@ -27,10 +25,12 @@ def login_access_token(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Incorrect username or password",
         )
-    elif user.updated_at is not None:
+    
+    if hasattr(user, "is_active") and not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user"
         )
+        
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     return schemas.Token(
         access_token=security.create_access_token(
@@ -38,7 +38,6 @@ def login_access_token(
         ),
         token_type="bearer",
     )
-
 
 @router.post("/me", response_model=User)
 def test_access_token(current_user: CurrentUser) -> Any:

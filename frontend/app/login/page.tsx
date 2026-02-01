@@ -15,7 +15,6 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null);
 
-  // 2. Initialisiere den Router
   const router = useRouter(); 
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -34,23 +33,16 @@ export default function LoginPage() {
          }
       });
 
-      console.log('Login successful. Received data:', response.data);
-      alert('Login erfolgreich!');
+      const token = response.data.access_token;
+      localStorage.setItem('token', token);
+      
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
-      // 3. NACH ERFOLGREICHEM LOGIN: Weiterleitung zum Dashboard
-      router.push('/dashboard'); 
+      console.log('Login successful. Token saved.');
+
+      window.location.href = '/frontend/dashboard'; 
       
     } catch (err) {
-      console.error('Login failed:', err);
-      
-      if (axios.isAxiosError(err) && err.response) {
-        setError(err.response.data.detail || 'Login failed due to server error.');
-      } else if (axios.isAxiosError(err) && err.code === 'ERR_NETWORK') {
-        setError('Connection failed. Please ensure the backend server is running on ' + LOGIN_API_URL);
-      } else {
-        setError('An unexpected error occurred during login.');
-      }
-      
     } finally {
       setLoading(false)
     }
