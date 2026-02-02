@@ -29,7 +29,7 @@ export default function TicketsPage() {
               <TableRow key={t.id}>
                 <TableCell>#{t.id}</TableCell>
                 <TableCell>{t.status}</TableCell>
-                <TableCell>Event {t.event_id}</TableCell>
+                <TableCell>{t.event_id}</TableCell>
               </TableRow>
             ))}
           </TableBody>

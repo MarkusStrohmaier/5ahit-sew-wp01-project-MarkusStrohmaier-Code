@@ -1,4 +1,4 @@
-'use client' // Wichtig: Das Layout muss nun ein Client-Component sein
+'use client'
 
 import "./globals.css"
 import { AuthProvider, useAuth } from "@/app/context/AuthContext"
@@ -27,7 +27,7 @@ function DirectNavigation() {
         {user && <span className="text-xs">{user.username} ({user.role})</span>}
         <button className="bg-red-600 px-3 py-1 rounded text-sm" onClick={() => {
           localStorage.removeItem('token')
-          window.location.href = '/login'
+          window.location.href = '/frontend/login'
         }}>Logout</button>
       </div>
     </nav>
