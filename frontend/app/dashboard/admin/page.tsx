@@ -12,7 +12,7 @@ export default function AdminPage() {
 
   const fetchUsers = async () => {
     try {
-      const { data } = await axios.get('http://localhost/api/users/')
+      const { data } = await axios.get('http://localhost/api/users/users/')
       setUsers(data)
     } catch (e) { console.error(e) }
   }
@@ -55,15 +55,6 @@ export default function AdminPage() {
                 <TableCell className="font-medium">{u.username}</TableCell>
                 <TableCell>{u.role}</TableCell>
                 <TableCell className="text-right">
-                  <Button 
-                    variant="destructive" 
-                    size="sm" 
-                    className="h-8 w-8 p-0 font-bold" 
-                    onClick={() => handleDelete(u.id)}
-                    title="Löschen"
-                  >
-                    X
-                  </Button>
                 </TableCell>
               </TableRow>
             ))}

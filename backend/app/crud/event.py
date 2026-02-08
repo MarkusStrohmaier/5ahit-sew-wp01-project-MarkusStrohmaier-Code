@@ -1,20 +1,16 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 from app.models.event import Event
+from app.models.ticket import Ticket
 from app.models.location import Location
 from app.schemas.event import EventCreate, EventUpdate
 from app.models.user import User
 
 
 def create_event(db: Session, event: EventCreate):
-    location = db.query(Location).filter(Location.id == event.location_id).first()
-    if not location:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Location not found")
-
     db_event = Event(
         title=event.title,
         date=event.date,
-        time=event.time,
         description=event.description,
         ticket_capacity=event.ticket_capacity,
         location_id=event.location_id
@@ -22,6 +18,19 @@ def create_event(db: Session, event: EventCreate):
     db.add(db_event)
     db.commit()
     db.refresh(db_event)
+
+    if db_event.ticket_capacity and db_event.ticket_capacity > 0:
+        tickets = []
+        for _ in range(db_event.ticket_capacity):
+            new_ticket = Ticket(
+                event_id=db_event.id,
+                status="AVAILABLE"
+            )
+            tickets.append(new_ticket)
+        
+        db.bulk_save_objects(tickets)
+        db.commit()
+
     return db_event
 
 

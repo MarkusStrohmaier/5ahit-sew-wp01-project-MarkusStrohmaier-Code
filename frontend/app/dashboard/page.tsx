@@ -11,7 +11,6 @@ export default function DashboardPage() {
     if (!loading) {
       if (!user) router.push('/frontend/login')
       else if (isAdmin) router.push('/dashboard/admin')
-      else if (isOrganizer) router.push('/dashboard/tickets')
       else router.push('/dashboard/visitor')
     }
   }, [user, loading, isAdmin, isOrganizer, router])

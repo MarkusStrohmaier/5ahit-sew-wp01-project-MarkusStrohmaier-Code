@@ -7,10 +7,20 @@ export function useAuth() {
 
   useEffect(() => {
     const fetchUser = async () => {
+      const token = localStorage.getItem('token')
+      if (!token) {
+        setLoading(false)
+        return
+      }
+
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+
       try {
         const { data } = await axios.post('http://localhost/api/login/me')
         setUser(data)
       } catch (error) {
+        delete axios.defaults.headers.common['Authorization']
+        localStorage.removeItem('token')
         setUser(null)
       } finally {
         setLoading(false)

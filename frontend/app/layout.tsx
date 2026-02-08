@@ -15,9 +15,7 @@ function DirectNavigation() {
         <Link href="/dashboard" className="font-bold text-xl">EventApp</Link>
         <Link href="/dashboard/visitor" className="hover:text-blue-400">Events</Link>
         
-        {(isAdmin || isOrganizer) && (
-          <Link href="/dashboard/tickets" className="text-yellow-400">Tickets</Link>
-        )}
+
         {isAdmin && (
           <Link href="/dashboard/admin" className="text-red-400">Admin</Link>
         )}
